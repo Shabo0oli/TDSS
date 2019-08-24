@@ -1,0 +1,134 @@
+{% extends "templates.html"%}
+{% load mathfilters %}
+{% load staticfiles %}
+
+{% block content %}
+
+    <!--suppress ALL -->
+    <div class="container-fluid">
+        <div class="row">
+
+            <div class="col-12" style="padding: 3%">
+
+                <div class="card">
+
+                    <div class="card-header">
+                        <h2 style="float: right">{{ word }} - تعداد : {{ count }}</h2>
+                    </div>
+
+                    <div class="card-body">
+
+                    <div class="row">
+                        <form method="post" action="export">
+                            <input type="hidden" name="word" value="{{ word }}">
+                            <button type="submit" style="margin-top: 2%" class="btn btn-info btn-lg btn-block">Export Tweets</button>
+                        </form>
+
+                    </div>
+
+                    <div class="row">
+                        <canvas id="myChart" width="30" height="15"></canvas>
+        <script>
+              var ctx = document.getElementById("myChart");
+              var myChart = new Chart(ctx, {
+                  type: 'doughnut',
+                  data : {
+    datasets: [{
+        data: [{% for source in sources %} {{ source.count }} , {% endfor %}]
+    }],
+
+    // These labels appear in the legend and in the tooltips when hovering different arcs
+    labels: [
+        {% for source in sources %} '{{ source.Source }}' , {% endfor %}
+    ]
+},
+              });
+        </script>
+                    </div>
+
+
+                    <div class="row">
+
+                        <canvas id="myChart1" width="200" height="100"></canvas>
+
+
+                        <script>
+                            var ctx = document.getElementById("myChart1");
+    var lineChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels:[ {% for t in timelinetime %} '{{ t }}' , {% endfor %}],
+    datasets: [{
+        label: " ",
+        backgroundColor: "rgba(38, 185, 154, 0.31)",
+        borderColor: "rgba(38, 185, 154, 0.7)",
+        pointBorderColor: "rgba(38, 185, 154, 0.7)",
+        pointBackgroundColor: "rgba(38, 185, 154, 0.7)",
+        pointHoverBackgroundColor: "#fff",
+        pointHoverBorderColor: "rgba(220,220,220,1)",
+        pointBorderWidth: 1,
+        data: {{timelinecount}}
+    }]
+    },
+    });
+
+                        </script>
+
+                    </div>
+
+                        <div class="row">
+
+                            <table class="table table-hover table-dark">
+                                <thead>
+                                <tr>
+                                    <th scope="col">Segment</th>
+                                    <th scope="col">Count</th>
+                                    <th scope="col">Mean_of_Reliability</th>
+                                    <th scope="col">Range_of_Reliability</th>
+                                    <th scope="col">Mean_of_Popularity</th>
+                                    <th scope="col">Range_of_Popularity</th>
+                                    <th scope="col">Mean_of_Polarity</th>
+                                    <th scope="col">Range_of_Polarity</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for cluster in analysis.clusters %}
+                                <tr>
+                                    <th scope="row">{{ cluster.Name }}</th>
+                                    <td>{{ cluster.count }}</td>
+                                    <td>{{ cluster.sum_rl|div:cluster.count }}</td>
+                                    <td>[ {{ cluster.min_rl}} - {{ cluster.max_rl }} ]</td>
+                                    <td>{{ cluster.sum_pp|div:cluster.count }}</td>
+                                    <td>[ {{ cluster.min_pp}} - {{ cluster.max_pp }} ]</td>
+                                    <td>{{ cluster.sum_pl|div:cluster.count }}</td>
+                                    <td>[ {{ cluster.min_pl}} - {{ cluster.max_pl }} ]</td>
+                                </tr>
+                                {% endfor %}
+
+                                </tbody>
+                            </table>
+
+                        </div>
+
+
+                        <div class="row">
+                            {% for plot in analysis.plots %}
+                                <div class="col-6" style="padding: 1%">
+                                    <img src="{{ plot|cut:"web/" }}" class="img-responsive">
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+        </div>
+    </div>
+
+
+
+{% endblock %}
